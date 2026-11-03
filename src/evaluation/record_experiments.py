@@ -170,8 +170,42 @@ def anomaly_record():
     }
 
 
+def optimizer_record():
+    """Milestone 7 benchmarks, kept as OPT-01."""
+    summ = json.loads((RESULTS_DIR / "optimizer_benchmark_summary.json").read_text(encoding="utf-8"))
+    tables = {k: pd.read_csv(RESULTS_DIR / f"optimizer_benchmark_{k}.csv", index_col=0) for k in summ}
+    d, t = summ["default"], tables["default"]
+    return {
+        "title": "How much better is the optimizer than simpler ways to pick a team?",
+        "status": "completed",
+        "methodology": "Same pool for every method (fully evolved, BST >= 500). Baselines: 10,000 random teams, "
+                       "the 6 highest-BST Pokémon, and a greedy one-at-a-time heuristic. Two scenarios: "
+                       "legendaries excluded (default) and allowed. The optimizer maximizes the same score it is "
+                       "judged on, so the gaps and rule compliance are the result, not the win itself.",
+        "data_files": ["results/optimizer_benchmark_summary.json",
+                       *[f"results/optimizer_benchmark_{k}.csv" for k in summ]],
+        "metrics": {k: {m: v for m, v in s_.items() if m != "teams"} for k, s_ in summ.items()}
+                   | {"teams": {k: s_["teams"] for k, s_ in summ.items()}},
+        "interpretation": (
+            f"Only {d['random_share_following_rules']:.0%} of random teams follow the weakness and type rules, "
+            f"and none of {d['n_random']:,} reached the optimal score. The optimum beats the best rule-following "
+            f"random team by {d['optimized_vs_best_valid_random']:.3f} and greedy by {d['optimized_vs_greedy']:.3f} "
+            f"(greedy defense {t.loc['greedy', 'defense']:.2f} vs {t.loc['optimized', 'defense']:.2f}): an early "
+            "greedy pick blocks better combinations later. The 6 highest-BST Pokémon break the rules "
+            f"(weakness load {t.loc['top_bst', 'max_weakness_load']:.0f}) and cover far fewer types "
+            f"({t.loc['top_bst', 'coverage']:.2f} vs {t.loc['optimized', 'coverage']:.2f}). The trade-off: the "
+            f"optimized team averages {t.loc['optimized', 'mean_bst']:.0f} BST vs {t.loc['top_bst', 'mean_bst']:.0f}."),
+        "limitations": "Abilities, moves and items are ignored (e.g. Slaking and Wishiwashi rank high on BST "
+                       "but have ability drawbacks). The objective weights are illustrative, not fitted to battle results. "
+                       "This measures type coverage and stat balance, not battle strength.",
+    }
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
+    if (RESULTS_DIR / "optimizer_benchmark_summary.json").exists():
+        (OUT / "OPT-01.json").write_text(json.dumps({"id": "OPT-01", **optimizer_record()}, indent=2), encoding="utf-8")
+        print("OPT-01 - completed")
     if (RESULTS_DIR / "anomaly_summary.json").exists():
         (OUT / "ANOM-01.json").write_text(json.dumps({"id": "ANOM-01", **anomaly_record()}, indent=2), encoding="utf-8")
         print("ANOM-01 - completed")

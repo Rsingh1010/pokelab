@@ -1,0 +1,89 @@
+{
+  "id": "OPT-01",
+  "title": "How much better is the optimizer than simpler ways to pick a team?",
+  "status": "completed",
+  "methodology": "Same pool for every method (fully evolved, BST >= 500). Baselines: 10,000 random teams, the 6 highest-BST Pok\u00e9mon, and a greedy one-at-a-time heuristic. Two scenarios: legendaries excluded (default) and allowed. The optimizer maximizes the same score it is judged on, so the gaps and rule compliance are the result, not the win itself.",
+  "data_files": [
+    "results/optimizer_benchmark_summary.json",
+    "results/optimizer_benchmark_default.csv",
+    "results/optimizer_benchmark_with_legendaries.csv"
+  ],
+  "metrics": {
+    "default": {
+      "pool_size": 219,
+      "min_bst": 500,
+      "allow_legendary": false,
+      "n_random": 10000,
+      "random_share_following_rules": 0.04,
+      "random_share_scoring_at_or_above_optimum": 0.0,
+      "optimized_vs_best_valid_random": 0.1087,
+      "optimized_vs_greedy": 0.0691
+    },
+    "with_legendaries": {
+      "pool_size": 307,
+      "min_bst": 500,
+      "allow_legendary": true,
+      "n_random": 10000,
+      "random_share_following_rules": 0.0435,
+      "random_share_scoring_at_or_above_optimum": 0.0,
+      "optimized_vs_best_valid_random": 0.0555,
+      "optimized_vs_greedy": 0.0406
+    },
+    "teams": {
+      "default": {
+        "optimized": [
+          "Celesteela",
+          "Blacephalon",
+          "Quaquaval",
+          "Scream Tail",
+          "Brute Bonnet",
+          "Sandy Shocks"
+        ],
+        "top_bst": [
+          "Slaking",
+          "Wishiwashi",
+          "Dragonite",
+          "Tyranitar",
+          "Salamence",
+          "Metagross"
+        ],
+        "greedy": [
+          "Celesteela",
+          "Hawlucha",
+          "Iron Treads",
+          "Krookodile",
+          "Flutter Mane",
+          "Ampharos"
+        ]
+      },
+      "with_legendaries": {
+        "optimized": [
+          "Zapdos",
+          "Victini",
+          "Primarina",
+          "Marshadow",
+          "Brute Bonnet",
+          "Iron Treads"
+        ],
+        "top_bst": [
+          "Arceus",
+          "Eternatus",
+          "Mewtwo",
+          "Lugia",
+          "Ho-Oh",
+          "Rayquaza"
+        ],
+        "greedy": [
+          "Magearna",
+          "Hawlucha",
+          "Iron Treads",
+          "Golisopod",
+          "Giratina",
+          "Seismitoad"
+        ]
+      }
+    }
+  },
+  "interpretation": "Only 4% of random teams follow the weakness and type rules, and none of 10,000 reached the optimal score. The optimum beats the best rule-following random team by 0.109 and greedy by 0.069 (greedy defense 0.81 vs 0.97): an early greedy pick blocks better combinations later. The 6 highest-BST Pok\u00e9mon break the rules (weakness load 4) and cover far fewer types (0.56 vs 0.86). The trade-off: the optimized team averages 563 BST vs 615.",
+  "limitations": "Abilities, moves and items are ignored (e.g. Slaking and Wishiwashi rank high on BST but have ability drawbacks). The objective weights are illustrative, not fitted to battle results. This measures type coverage and stat balance, not battle strength."
+}

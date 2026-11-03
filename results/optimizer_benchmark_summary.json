@@ -1,0 +1,74 @@
+{
+  "default": {
+    "pool_size": 219,
+    "min_bst": 500,
+    "allow_legendary": false,
+    "n_random": 10000,
+    "random_share_following_rules": 0.04,
+    "random_share_scoring_at_or_above_optimum": 0.0,
+    "optimized_vs_best_valid_random": 0.1087,
+    "optimized_vs_greedy": 0.0691,
+    "teams": {
+      "optimized": [
+        "Celesteela",
+        "Blacephalon",
+        "Quaquaval",
+        "Scream Tail",
+        "Brute Bonnet",
+        "Sandy Shocks"
+      ],
+      "top_bst": [
+        "Slaking",
+        "Wishiwashi",
+        "Dragonite",
+        "Tyranitar",
+        "Salamence",
+        "Metagross"
+      ],
+      "greedy": [
+        "Celesteela",
+        "Hawlucha",
+        "Iron Treads",
+        "Krookodile",
+        "Flutter Mane",
+        "Ampharos"
+      ]
+    }
+  },
+  "with_legendaries": {
+    "pool_size": 307,
+    "min_bst": 500,
+    "allow_legendary": true,
+    "n_random": 10000,
+    "random_share_following_rules": 0.0435,
+    "random_share_scoring_at_or_above_optimum": 0.0,
+    "optimized_vs_best_valid_random": 0.0555,
+    "optimized_vs_greedy": 0.0406,
+    "teams": {
+      "optimized": [
+        "Zapdos",
+        "Victini",
+        "Primarina",
+        "Marshadow",
+        "Brute Bonnet",
+        "Iron Treads"
+      ],
+      "top_bst": [
+        "Arceus",
+        "Eternatus",
+        "Mewtwo",
+        "Lugia",
+        "Ho-Oh",
+        "Rayquaza"
+      ],
+      "greedy": [
+        "Magearna",
+        "Hawlucha",
+        "Iron Treads",
+        "Golisopod",
+        "Giratina",
+        "Seismitoad"
+      ]
+    }
+  }
+}
