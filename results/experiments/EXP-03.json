@@ -1,5 +1,50 @@
 {
   "id": "EXP-03",
   "title": "K-Means vs Gaussian Mixture Models",
-  "status": "pending"
+  "status": "completed",
+  "question": "Does a soft, flexible-shape model (GMM) find stable groups where K-Means did not?",
+  "methodology": "GMM, full covariance, n_init=5, on fully evolved / relative stats (HP share dropped: shares sum to 1). Same pre-registered rule as K-Means; BIC to choose among eligible k.",
+  "algorithm": "GaussianMixture(covariance_type='full', n_init=5, random_state=42)",
+  "data_files": [
+    "results/gmm_selection.csv",
+    "results/k_selection.csv"
+  ],
+  "metrics": {
+    "gmm_eligible_k": [],
+    "gmm_lowest_bic_k": 4,
+    "gmm_stability_ari_k3_8": [
+      0.359,
+      0.407,
+      0.456,
+      0.374,
+      0.431,
+      0.408
+    ],
+    "kmeans_stability_ari_k3_8": [
+      0.454,
+      0.494,
+      0.591,
+      0.446,
+      0.452,
+      0.435
+    ],
+    "gmm_silhouette_k3_8": [
+      0.116,
+      0.041,
+      0.046,
+      0.009,
+      0.046,
+      0.012
+    ],
+    "gmm_mean_top_probability_k3_8": [
+      0.859,
+      0.893,
+      0.861,
+      0.832,
+      0.887,
+      0.831
+    ]
+  },
+  "interpretation": "GMM also has no eligible k and is less stable than K-Means at every k=3-8 (GMM ARI 0.36-0.46). BIC is lowest at k=4, but that k is unstable. GMM reports high confidence (mean top probability 0.83-0.89) while its groups change across resamples: model probabilities assume the model is right and do not measure stability.",
+  "limitations": "Silhouette favors round groups, so it penalizes GMM's stretched groups by design; bootstrap stability is the fairer comparison and also fails."
 }

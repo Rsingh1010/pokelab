@@ -16,7 +16,8 @@ OUT = RESULTS_DIR / "experiments"
 def load():
     sel = pd.read_csv(RESULTS_DIR / "k_selection.csv")
     xtab = pd.read_csv(RESULTS_DIR / "evolution_crosstab_k2.csv", index_col=0)
-    return sel, xtab
+    gmm = pd.read_csv(RESULTS_DIR / "gmm_selection.csv").set_index("k")
+    return sel, xtab, gmm
 
 
 def setup(sel, subset, representation):
@@ -27,7 +28,7 @@ def r(x):
     return round(float(x), 3)
 
 
-def build_records(sel, xtab):
+def build_records(sel, xtab, gmm):
     all_std = setup(sel, "all", "standardized")
     fe_std = setup(sel, "fully_evolved", "standardized")
     fe_rel = setup(sel, "fully_evolved", "relative")
@@ -61,7 +62,7 @@ def build_records(sel, xtab):
         },
         "EXP-02": {
             "title": "Can statistical roles be discovered independently of total strength?",
-            "status": "in progress (GMM pending)",
+            "status": "completed",
             "question": "Do relative stats (stat / BST) on fully evolved Pokémon form real, stable groups?",
             "methodology": "Fully evolved (568) on relative stats; compare silhouette to a shuffled-column baseline "
                            "(10 shuffles, 95th percentile) and measure bootstrap stability (20 resamples, ARI).",
@@ -75,11 +76,37 @@ def build_records(sel, xtab):
             },
             "interpretation": "Every k=3-8 beats the shuffled baseline, but by at most "
                               f"{(cand['silhouette'] - cand['baseline_p95']).max():.3f}. No k>=3 is stable "
-                              f"(best ARI {cand['stability_ari'].max():.3f}). Role structure exists but is weak: "
-                              "Pokémon stat shapes look like a continuum, not discrete groups.",
+                              f"(best K-Means ARI {cand['stability_ari'].max():.3f}; best GMM ARI "
+                              f"{gmm.loc[3:8, 'stability_ari'].max():.3f}). Relative-stat clusters have near-equal "
+                              "mean BST, so they do reflect stat shape, not strength, but the shapes form a continuum "
+                              "rather than discrete groups. Only a 2-way split (fast/special vs bulky/physical) is stable.",
             "limitations": "Silhouette and K-Means both assume round, similar-sized groups; overlapping groups would score poorly.",
         },
-        "EXP-03": {"title": "K-Means vs Gaussian Mixture Models", "status": "pending"},
+        "EXP-03": {
+            "title": "K-Means vs Gaussian Mixture Models",
+            "status": "completed",
+            "question": "Does a soft, flexible-shape model (GMM) find stable groups where K-Means did not?",
+            "methodology": "GMM, full covariance, n_init=5, on fully evolved / relative stats (HP share dropped: "
+                           "shares sum to 1). Same pre-registered rule as K-Means; BIC to choose among eligible k.",
+            "algorithm": "GaussianMixture(covariance_type='full', n_init=5, random_state=42)",
+            "data_files": ["results/gmm_selection.csv", "results/k_selection.csv"],
+            "metrics": {
+                "gmm_eligible_k": gmm.index[gmm["eligible"]].tolist(),
+                "gmm_lowest_bic_k": int(gmm["bic"].idxmin()),
+                "gmm_stability_ari_k3_8": gmm.loc[3:8, "stability_ari"].round(3).tolist(),
+                "kmeans_stability_ari_k3_8": cand["stability_ari"].round(3).tolist(),
+                "gmm_silhouette_k3_8": gmm.loc[3:8, "silhouette"].round(3).tolist(),
+                "gmm_mean_top_probability_k3_8": gmm.loc[3:8, "mean_top_probability"].round(3).tolist(),
+            },
+            "interpretation": f"GMM also has no eligible k and is less stable than K-Means at every k=3-8 "
+                              f"(GMM ARI {gmm.loc[3:8, 'stability_ari'].min():.2f}-{gmm.loc[3:8, 'stability_ari'].max():.2f}). "
+                              f"BIC is lowest at k={int(gmm['bic'].idxmin())}, but that k is unstable. GMM reports high "
+                              f"confidence (mean top probability {gmm.loc[3:8, 'mean_top_probability'].min():.2f}-"
+                              f"{gmm.loc[3:8, 'mean_top_probability'].max():.2f}) while its groups change across resamples: "
+                              "model probabilities assume the model is right and do not measure stability.",
+            "limitations": "Silhouette favors round groups, so it penalizes GMM's stretched groups by design; "
+                           "bootstrap stability is the fairer comparison and also fails.",
+        },
         "EXP-04": {
             "title": "How many archetypes should be identified?",
             "status": "completed (K-Means)",
