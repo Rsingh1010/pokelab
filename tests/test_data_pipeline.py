@@ -61,6 +61,7 @@ def make_species(name="testmon", en_name="Testmon", generation="generation-iv", 
         "generation": {"name": generation},
         "is_legendary": False,
         "is_mythical": True,
+        "evolves_from_species": None,
         "varieties": varieties,
     }
 
@@ -82,8 +83,8 @@ def make_pokemon(stats=(50, 60, 70, 80, 90, 100), types=(("fire", 1),)):
 def valid_df():
     """A tiny table that should pass validation. Tests break it on purpose."""
     rows = [bd.parse_one(make_species(), make_pokemon())]
-    rows.append({**rows[0], "dex_id": 1000, "name": "Othermon"})
-    return pd.DataFrame(rows)
+    rows.append({**rows[0], "dex_id": 1000, "name": "Othermon", "species_slug": "othermon"})
+    return bd.add_evolution_features(pd.DataFrame(rows))
 
 
 # ---------------------------------------------------------------- 1. fetch logic
@@ -166,6 +167,7 @@ def test_validate_accepts_clean_data():
         lambda df: df.assign(attack=None),           # missing stat
         lambda df: df.assign(type_1="sound"),        # not a real type
         lambda df: df.assign(type_2="fire"),         # type_2 == type_1
+        lambda df: df.assign(evolves_from="ghostmon"),  # parent species doesn't exist
     ],
 )
 def test_validate_rejects_bad_data(corrupt):
@@ -233,3 +235,24 @@ def test_processed_uses_overrides(processed):
     for species_slug, form in FORM_OVERRIDES.items():
         assert used[species_slug] == form
     assert processed["form_override"].sum() == len(FORM_OVERRIDES)
+
+
+# ---------------------------------------------------------------- 5. evolution features
+def test_evolution_features_on_known_tree():
+    # a -> b -> c is a 3-stage line; a also branches to e; d never evolves
+    df = pd.DataFrame({
+        "species_slug": ["a", "b", "c", "d", "e"],
+        "evolves_from": [None, "a", "b", None, "a"],
+    })
+    out = bd.add_evolution_features(df).set_index("species_slug")
+    assert out["evolution_stage"].to_dict() == {"a": 1, "b": 2, "c": 3, "d": 1, "e": 2}
+    assert out["is_fully_evolved"].to_dict() == {"a": False, "b": False, "c": True, "d": True, "e": True}
+
+
+def test_processed_evolution_examples(processed):
+    p = processed.set_index("species_slug")
+    assert p.loc[["charmander", "charmeleon", "charizard"], "evolution_stage"].tolist() == [1, 2, 3]
+    assert p.loc[["pichu", "pikachu", "raichu"], "is_fully_evolved"].tolist() == [False, False, True]
+    assert p.loc["tauros", "is_fully_evolved"]            # never evolves -> counts as final
+    assert not p.loc["eevee", "is_fully_evolved"]         # branches into 8 evolutions
+    assert p.loc[["vaporeon", "sylveon"], "is_fully_evolved"].all()

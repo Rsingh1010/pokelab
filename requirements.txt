@@ -2,3 +2,7 @@
 requests>=2.31
 pandas>=2.1
 pytest>=8.0
+# Milestone 2: notebooks + EDA charts
+ipykernel>=6.29
+matplotlib>=3.9
+seaborn>=0.13

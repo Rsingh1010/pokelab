@@ -56,11 +56,36 @@ def parse_one(species: dict, pokemon: dict) -> dict:
         "bst": sum(stats.values()),
         "abilities": "|".join(a["ability"]["name"] for a in pokemon["abilities"] if not a["is_hidden"]),
         "hidden_ability": next((a["ability"]["name"] for a in pokemon["abilities"] if a["is_hidden"]), None),
+        "evolves_from": (species["evolves_from_species"] or {}).get("name"),  # species slug or None
         "is_legendary": species["is_legendary"],
         "is_mythical": species["is_mythical"],
         "sprite_url": pokemon["sprites"]["front_default"],
         "artwork_url": pokemon["sprites"]["other"]["official-artwork"]["front_default"],
     }
+
+
+def add_evolution_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Add evolution_stage (1 = first in its line) and is_fully_evolved.
+
+    Uses only each species' 'evolves_from' link, so no extra API calls.
+    - Stage: count how many steps back the chain goes (Pichu 1, Pikachu 2, Raichu 3).
+    - Fully evolved: no other species evolves FROM this one.
+      Single-stage Pokémon (e.g. Tauros) count as fully evolved.
+    """
+    parent = dict(zip(df["species_slug"], df["evolves_from"]))
+
+    def stage(slug):
+        steps = 1
+        while isinstance(parent.get(slug), str):
+            slug = parent[slug]
+            steps += 1
+        return steps
+
+    has_child = set(df["evolves_from"].dropna())
+    return df.assign(
+        evolution_stage=df["species_slug"].map(stage),
+        is_fully_evolved=~df["species_slug"].isin(has_child),
+    )
 
 
 def build(use_overrides: bool = True) -> pd.DataFrame:
@@ -76,6 +101,7 @@ def build(use_overrides: bool = True) -> pd.DataFrame:
     df = pd.DataFrame(rows).sort_values("dex_id").reset_index(drop=True)
     before = len(df)
     df = df[df["generation"] <= MAX_GENERATION].reset_index(drop=True)
+    df = add_evolution_features(df)
     print(f"Parsed {before} species; kept {len(df)} in Gen I-{MAX_GENERATION}")
     print(f"Form overrides applied: {df.loc[df['form_override'], 'pokemon_slug'].tolist()}")
     return df
@@ -100,6 +126,10 @@ def validate(df: pd.DataFrame) -> None:
         problems.append("type_1 equals type_2")
     if df[["sprite_url", "artwork_url"]].isna().any().any():
         problems.append("missing image URL")
+    if not set(df["evolves_from"].dropna()).issubset(set(df["species_slug"])):
+        problems.append("evolves_from points to a species not in the dataset")
+    if not df["evolution_stage"].between(1, 3).all():
+        problems.append("evolution_stage outside 1-3")
     if problems:
         raise ValueError("Validation failed: " + "; ".join(problems))
     print("Validation passed")
