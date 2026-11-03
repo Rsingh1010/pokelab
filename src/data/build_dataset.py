@@ -9,7 +9,7 @@ import json
 import pandas as pd
 
 from src.config import PROCESSED_DIR, RAW_DIR
-from src.data.fetch_pokemon import cache_path, default_pokemon_name, list_species_ids
+from src.data.fetch_pokemon import cache_path, chosen_pokemon_name, default_pokemon_name, list_species_ids
 
 STAT_NAMES = {  # API name -> our column name
     "hp": "hp",
@@ -63,17 +63,21 @@ def parse_one(species: dict, pokemon: dict) -> dict:
     }
 
 
-def build() -> pd.DataFrame:
+def build(use_overrides: bool = True) -> pd.DataFrame:
+    """use_overrides=False gives the plain default-form dataset (for comparison runs)."""
     rows = []
     for species_id in list_species_ids():
         species = read_cached(f"pokemon-species/{species_id}")
-        pokemon = read_cached(f"pokemon/{default_pokemon_name(species)}")
-        rows.append(parse_one(species, pokemon))
+        pokemon = read_cached(f"pokemon/{chosen_pokemon_name(species, use_overrides)}")
+        row = parse_one(species, pokemon)
+        row["form_override"] = pokemon["name"] != default_pokemon_name(species)
+        rows.append(row)
 
     df = pd.DataFrame(rows).sort_values("dex_id").reset_index(drop=True)
     before = len(df)
     df = df[df["generation"] <= MAX_GENERATION].reset_index(drop=True)
     print(f"Parsed {before} species; kept {len(df)} in Gen I-{MAX_GENERATION}")
+    print(f"Form overrides applied: {df.loc[df['form_override'], 'pokemon_slug'].tolist()}")
     return df
 
 

@@ -195,3 +195,41 @@ def test_processed_stats_numeric_and_bst_consistent(processed):
 def test_processed_no_missing_required_fields(processed):
     required = ["dex_id", "name", "generation", "type_1", *bd.STAT_COLS, "bst"]
     assert processed[required].notna().all().all()
+
+
+# ---------------------------------------------------------------- 4. form overrides
+from src.data.form_overrides import FORM_OVERRIDES  # noqa: E402
+
+
+@pytest.mark.parametrize("species_slug", sorted(FORM_OVERRIDES))
+def test_override_is_a_real_form_of_its_species(species_slug):
+    path = fp.cache_path(f"pokemon-species/{species_slug}")
+    species_files = list(path.parent.glob("[0-9]*.json"))
+    if not species_files:
+        pytest.skip("Raw cache missing")
+    species = next(
+        s for s in (json.loads(f.read_text(encoding="utf-8")) for f in species_files)
+        if s["name"] == species_slug
+    )
+    forms = {v["pokemon"]["name"] for v in species["varieties"]}
+    assert FORM_OVERRIDES[species_slug] in forms
+
+
+def test_chosen_form_respects_switch(monkeypatch):
+    species = make_species(name="testmon")
+    monkeypatch.setitem(fp.FORM_OVERRIDES, "testmon", "testmon-form1")
+    assert fp.chosen_pokemon_name(species, use_overrides=True) == "testmon-form1"
+    assert fp.chosen_pokemon_name(species, use_overrides=False) == "testmon-form0"
+
+
+def test_bad_override_is_rejected(monkeypatch):
+    monkeypatch.setitem(fp.FORM_OVERRIDES, "testmon", "testmon-typo")
+    with pytest.raises(ValueError):
+        fp.chosen_pokemon_name(make_species(name="testmon"))
+
+
+def test_processed_uses_overrides(processed):
+    used = processed.set_index("species_slug")["pokemon_slug"]
+    for species_slug, form in FORM_OVERRIDES.items():
+        assert used[species_slug] == form
+    assert processed["form_override"].sum() == len(FORM_OVERRIDES)

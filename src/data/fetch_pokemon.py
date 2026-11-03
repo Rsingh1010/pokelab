@@ -8,6 +8,7 @@ import time
 
 import requests
 
+from src.data.form_overrides import FORM_OVERRIDES
 from src.config import (
     API_BASE,
     MAX_RETRIES,
@@ -88,6 +89,20 @@ def default_pokemon_name(species: dict) -> str:
     return defaults[0]
 
 
+def chosen_pokemon_name(species: dict, use_overrides: bool = True) -> str:
+    """The ONE place that decides which form represents a species.
+
+    Both the fetcher and the parser call this, so they can never disagree.
+    """
+    if use_overrides and species["name"] in FORM_OVERRIDES:
+        override = FORM_OVERRIDES[species["name"]]
+        varieties = {v["pokemon"]["name"] for v in species["varieties"]}
+        if override not in varieties:
+            raise ValueError(f"Override {override!r} is not a form of {species['name']}")
+        return override
+    return default_pokemon_name(species)
+
+
 def download_all() -> None:
     """Make sure every species and its default Pokémon is in the cache.
 
@@ -99,7 +114,7 @@ def download_all() -> None:
 
     for n, species_id in enumerate(ids, start=1):
         species = get_json(f"pokemon-species/{species_id}")
-        get_json(f"pokemon/{default_pokemon_name(species)}")
+        get_json(f"pokemon/{chosen_pokemon_name(species)}")
         if n % 100 == 0 or n == len(ids):
             print(f"  {n}/{len(ids)} done")
 
