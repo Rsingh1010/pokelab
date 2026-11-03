@@ -117,3 +117,26 @@ def test_coverage_counts_depth_up_to_two():
     M.offense[[1, 2, 3], 1] = 1               # type 1 covered three times (capped at 2)
     s = to.score_team(M, range(6))
     assert s["coverage"] == pytest.approx((1 + 2) / (T * to.COVER_DEPTH))
+
+
+def test_quad_weakness_counts_double(real):
+    df, chart = real
+    fe = to.add_team_features(df)
+    pool = to.select_pool(fe, 0, allow_legendary=True)
+    M = to.build_matrices(pool, chart)
+    ground = TYPES.index("ground")
+    i = M.names.index("Magnezone")      # Electric/Steel: 4x weak to Ground
+    j = M.names.index("Garchomp")       # Dragon/Ground: not weak to Ground
+    k = M.names.index("Charizard")      # Fire/Flying: immune to Ground
+    assert M.weak[i, ground] == 2
+    assert M.weak[j, ground] == 0 and M.weak[k, ground] == 0
+    assert M.weak[k, TYPES.index("rock")] == 2   # Charizard 4x Rock
+    assert M.weak[k, TYPES.index("water")] == 1  # Charizard 2x Water
+
+
+def test_two_quad_weak_members_not_allowed_together(real):
+    df, chart = real
+    team, _, pool, M = to.optimize(df, chart, locked=["Magnezone"])
+    ground = TYPES.index("ground")
+    idx = [M.names.index(n) for n in team["name"]]
+    assert M.weak[idx, ground].sum() <= to.DEFAULT_MAX_WEAK

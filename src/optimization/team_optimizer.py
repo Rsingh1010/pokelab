@@ -13,6 +13,7 @@ Maximize   w_cov * sum(c)/36 + w_def * sum(d)/36 + w_role * sum(g)/4 + w_bal * m
 Subject to
     sum_i x_i = 6
     sum_i WEAK[i,t] x_i <= max_weak         for every attacking type t
+                                             (WEAK = 1 for a 2x weakness, 2 for a 4x weakness)
     sum_i HAS_TYPE[i,T] x_i <= max_per_type  for every type T
     x_i = 1 for locked Pokémon
 Pool filters (applied before solving): fully evolved, BST >= min_bst, legendaries optional.
@@ -41,7 +42,7 @@ TERMS = ("coverage", "defense", "roles", "balance")
 DEFAULT_WEIGHTS = {"coverage": 0.4, "defense": 0.3, "roles": 0.2, "balance": 0.1}
 ROLES = ("fast", "bulky", "physical", "special")
 DEFAULT_MIN_BST = 500   # median BST of fully evolved Pokémon
-DEFAULT_MAX_WEAK = 2    # common team-building rule of thumb: no more than 2 members weak to one type
+DEFAULT_MAX_WEAK = 2    # rule of thumb: weakness load per attacking type <= 2 (two 2x members, or one 4x)
 DEFAULT_MAX_PER_TYPE = 2
 TIEBREAK = 1e-5
 COVER_DEPTH = 2         # a type counts as fully covered when 2 members cover it
@@ -103,7 +104,7 @@ class Matrices:
     bst: np.ndarray
     offense: np.ndarray    # n x 18: hits defending type t super-effectively with an own-type attack
     resist: np.ndarray     # n x 18: takes <= 0.5x from attacking type t (resist or immune)
-    weak: np.ndarray       # n x 18: takes >= 2x from attacking type t
+    weak: np.ndarray       # n x 18: weakness load. 0 = not weak, 1 = takes 2x, 2 = takes 4x
     has_type: np.ndarray   # n x 18: is of type T
     roles: np.ndarray      # n x 4
     pct: np.ndarray        # n x 6 stat percentiles
@@ -115,7 +116,9 @@ def build_matrices(pool: pd.DataFrame, chart: pd.DataFrame) -> Matrices:
         d = defensive_profile(chart, t1, t2)
         off.append((offensive_profile(chart, t1, t2)[TYPES] >= 2).to_numpy())
         res.append((d[TYPES] <= 0.5).to_numpy())
-        weak.append((d[TYPES] >= 2).to_numpy())
+        # A 4x weakness counts double: two Pokémon with 4x Ground weakness are far
+        # riskier than two with 2x, and should hit the shared-weakness limit.
+        weak.append(np.select([d[TYPES] >= 4, d[TYPES] >= 2], [2, 1], 0))
         has.append(np.array([t in (t1, t2) for t in TYPES]))
     return Matrices(
         names=pool["name"].tolist(),

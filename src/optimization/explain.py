@@ -57,7 +57,9 @@ def explain_team(M: Matrices, idx, weights=DEFAULT_WEIGHTS) -> dict:
         "only_one_answer": _types(off == 1),
         "nothing_resists": _types(res == 0),
         "only_one_resist": _types(res == 1),
-        "shared_weaknesses": {t: int(n) for t, n in zip(TYPES, weak) if n >= 2},
+        # weakness load: 2x weakness = 1, 4x weakness = 2
+        "weakness_load_at_limit": {t: int(n) for t, n in zip(TYPES, weak) if n >= 2},
+        "quad_weaknesses": {M.names[i]: _types(M.weak[i] == 2) for i in idx if (M.weak[i] == 2).any()},
         "roles_missing": [r for r, n in zip(ROLES, M.roles[idx].sum(0)) if n == 0],
         "weakest_stat": STAT_COLS[int(np.argmin(team_pct))],
         "weakest_stat_percentile": float(team_pct.min()),

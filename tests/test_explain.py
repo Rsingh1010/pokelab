@@ -48,7 +48,7 @@ def test_team_summary(team):
     s = ex.explain_team(team, range(6))
     assert s["only_one_answer"] == ["grass"]
     assert "water" not in s["no_super_effective_answer"] and "fire" in s["no_super_effective_answer"]
-    assert s["shared_weaknesses"] == {"fire": 2}
+    assert s["weakness_load_at_limit"] == {"fire": 2}
     assert s["only_one_resist"] == ["fire"]
     assert s["roles_missing"] == ["bulky", "physical", "special"]
     assert s["weakest_stat"] == "defense" and s["weakest_stat_percentile"] == pytest.approx(0.2)
