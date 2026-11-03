@@ -1,0 +1,25 @@
+{
+  "id": "EXP-01",
+  "title": "Does overall strength influence clustering?",
+  "status": "completed",
+  "question": "Do standardized raw stats cluster by strength / evolution stage rather than by role?",
+  "hypothesis": "Yes: EDA showed every raw stat correlates 0.55-0.71 with BST.",
+  "methodology": "Cluster all 1,025 Pok\u00e9mon on standardized stats; compare the k=2 split with is_fully_evolved; repeat on fully evolved only.",
+  "algorithm": "K-Means (n_init=10, random_state=42)",
+  "k_range": "2-10",
+  "data_files": [
+    "results/k_selection.csv",
+    "results/evolution_crosstab_k2.csv"
+  ],
+  "metrics": {
+    "all_standardized_k2_silhouette": 0.295,
+    "all_standardized_k2_stability_ari": 0.938,
+    "k2_agreement_with_is_fully_evolved": 0.921,
+    "fully_evolved_standardized_silhouette_range": [
+      0.152,
+      0.176
+    ]
+  },
+  "interpretation": "The strongest raw-stat split (k=2) matches evolved vs not-evolved for 92% of Pok\u00e9mon. Removing unevolved Pok\u00e9mon drops silhouette to 0.15-0.18 at every k. Raw-stat structure is mostly evolution stage and power level, not role.",
+  "limitations": "Evolution stage is derived from Pok\u00e9API evolves_from links; baby Pok\u00e9mon count as stage 1."
+}

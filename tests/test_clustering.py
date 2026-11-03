@@ -40,3 +40,20 @@ def test_metrics_prefer_true_k(three_blobs):
     table = cl.sweep_k(three_blobs, ks=range(2, 6)).set_index("k")
     assert table["silhouette"].idxmax() == 3
     assert table["davies_bouldin"].idxmin() == 3
+
+
+def test_profiles_and_margins(three_blobs):
+    import pandas as pd
+    X = pd.DataFrame(three_blobs, columns=["a", "b"])
+    data = pd.DataFrame({"name": [f"p{i}" for i in range(len(X))], "bst": range(len(X))})
+    model = cl.fit_kmeans(X, k=3)
+    prof = cl.cluster_profiles(data, X, model, n_examples=3)
+    assert prof["size"].sum() == len(X)
+    assert abs(prof["share"].sum() - 1) < 1e-9
+    for _, row in prof.iterrows():  # typical members really belong to that cluster
+        names = row["typical_members"].split(", ")
+        idx = data.index[data["name"].isin(names)]
+        assert set(model.labels_[idx]) == {row["cluster"]}
+    margins = cl.assignment_margins(X, model)
+    assert margins["margin"].between(0, 1).all()
+    assert not margins["borderline"].any()   # well-separated blobs: nobody is borderline

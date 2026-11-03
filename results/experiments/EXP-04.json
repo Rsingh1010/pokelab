@@ -1,0 +1,20 @@
+{
+  "id": "EXP-04",
+  "title": "How many archetypes should be identified?",
+  "status": "completed (K-Means)",
+  "question": "Which k satisfies the pre-registered selection rule?",
+  "methodology": "Rule set before viewing profiles: main setup fully_evolved/relative, k in 3-8; eligible only if silhouette > shuffled baseline p95, bootstrap ARI >= 0.6, smallest cluster >= 5%.",
+  "algorithm": "K-Means (n_init=10, random_state=42)",
+  "k_range": "2-10",
+  "data_files": [
+    "results/k_selection.csv",
+    "results/evolution_crosstab_k2.csv"
+  ],
+  "metrics": {
+    "eligible_k": [],
+    "closest_k": 5,
+    "closest_k_stability_ari": 0.591
+  },
+  "interpretation": "No k qualified. k=5 came closest (ARI 0.591 vs 0.6 cutoff). The cutoff was not lowered after seeing results. Clusters are reported as descriptive partitions only.",
+  "limitations": "20 bootstrap resamples: ARI estimates carry noise of a few hundredths."
+}

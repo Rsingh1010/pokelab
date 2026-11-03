@@ -1,0 +1,43 @@
+{
+  "id": "EXP-02",
+  "title": "Can statistical roles be discovered independently of total strength?",
+  "status": "in progress (GMM pending)",
+  "question": "Do relative stats (stat / BST) on fully evolved Pok\u00e9mon form real, stable groups?",
+  "methodology": "Fully evolved (568) on relative stats; compare silhouette to a shuffled-column baseline (10 shuffles, 95th percentile) and measure bootstrap stability (20 resamples, ARI).",
+  "algorithm": "K-Means (n_init=10, random_state=42)",
+  "k_range": "2-10",
+  "data_files": [
+    "results/k_selection.csv",
+    "results/evolution_crosstab_k2.csv"
+  ],
+  "metrics": {
+    "silhouette_k3_8": [
+      0.199,
+      0.195,
+      0.197,
+      0.178,
+      0.189,
+      0.189
+    ],
+    "baseline_p95_k3_8": [
+      0.162,
+      0.165,
+      0.169,
+      0.175,
+      0.173,
+      0.169
+    ],
+    "max_margin_over_baseline_k3_8": 0.037,
+    "stability_ari_k3_8": [
+      0.454,
+      0.494,
+      0.591,
+      0.446,
+      0.452,
+      0.435
+    ],
+    "stability_ari_k2": 0.756
+  },
+  "interpretation": "Every k=3-8 beats the shuffled baseline, but by at most 0.037. No k>=3 is stable (best ARI 0.591). Role structure exists but is weak: Pok\u00e9mon stat shapes look like a continuum, not discrete groups.",
+  "limitations": "Silhouette and K-Means both assume round, similar-sized groups; overlapping groups would score poorly."
+}
