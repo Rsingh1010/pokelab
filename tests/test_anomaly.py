@@ -49,3 +49,13 @@ def test_baseline_and_driver():
 
 def test_seed_stability_high_on_clear_data(stats_with_planted_outlier):
     assert ad.seed_stability(stats_with_planted_outlier, seeds=range(3)) > 0.8
+
+
+def test_fully_evolved_view_scores_only_fully_evolved():
+    from src.features.preprocessing import load_pokemon
+    df = load_pokemon()
+    X = ad.views(df)["fe_relative"]
+    assert len(X) == df["is_fully_evolved"].sum()
+    table = ad.score_view(X, "fe_relative").reindex(df.index)
+    assert table.loc[~df["is_fully_evolved"], "fe_relative_score"].isna().all()   # blank, not zero
+    assert table["fe_relative_flagged"].eq(True).sum() == round(ad.TOP_SHARE * len(X))

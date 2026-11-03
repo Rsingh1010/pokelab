@@ -1,10 +1,78 @@
 {
   "raw": {
+    "n_scored": 1025,
     "seed_stability_spearman": 0.992,
     "spearman_vs_max_abs_z": 0.889
   },
   "relative": {
+    "n_scored": 1025,
     "seed_stability_spearman": 0.992,
     "spearman_vs_max_abs_z": 0.913
+  },
+  "fe_relative": {
+    "n_scored": 568,
+    "seed_stability_spearman": 0.991,
+    "spearman_vs_max_abs_z": 0.913
+  },
+  "flagged_composition": {
+    "raw": {
+      "n_flagged": 51,
+      "fully_evolved_flagged": 0.784,
+      "fully_evolved_all": 0.554,
+      "legendary_or_mythical_flagged": 0.353,
+      "legendary_or_mythical_all": 0.092
+    },
+    "relative": {
+      "n_flagged": 51,
+      "fully_evolved_flagged": 0.412,
+      "fully_evolved_all": 0.554,
+      "legendary_or_mythical_flagged": 0.078,
+      "legendary_or_mythical_all": 0.092
+    },
+    "fe_relative": {
+      "n_flagged": 28,
+      "fully_evolved_flagged": 1.0,
+      "fully_evolved_all": 1.0,
+      "legendary_or_mythical_flagged": 0.143,
+      "legendary_or_mythical_all": 0.157
+    }
+  },
+  "form_override_check": {
+    "raw": {
+      "top_overlap": 19,
+      "top_n": 20,
+      "rank_with_overrides": {
+        "Wishiwashi": 4,
+        "Terapagos": 376
+      },
+      "rank_default_forms": {
+        "Wishiwashi": 44,
+        "Terapagos": 882
+      }
+    },
+    "relative": {
+      "top_overlap": 19,
+      "top_n": 20,
+      "rank_with_overrides": {
+        "Wishiwashi": 63,
+        "Terapagos": 929
+      },
+      "rank_default_forms": {
+        "Wishiwashi": 144,
+        "Terapagos": 720
+      }
+    },
+    "fe_relative": {
+      "top_overlap": 20,
+      "top_n": 20,
+      "rank_with_overrides": {
+        "Wishiwashi": 33,
+        "Terapagos": 543
+      },
+      "rank_default_forms": {
+        "Wishiwashi": 59,
+        "Terapagos": 398
+      }
+    }
   }
 }

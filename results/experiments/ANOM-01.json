@@ -1,0 +1,129 @@
+{
+  "id": "ANOM-01",
+  "title": "Which Pok\u00e9mon have unusual stat profiles?",
+  "status": "completed",
+  "methodology": "Isolation Forest (500 trees). Three views: raw stats (all), relative stats (all), relative stats (fully evolved only). No labels exist, so checked by seed stability (Spearman across 5 seeds), agreement with a single-stat baseline (max |z|), and a form-override robustness check. 'Flagged' = top 5%, a reporting cutoff only.",
+  "algorithm": "IsolationForest(n_estimators=500, random_state=42)",
+  "data_files": [
+    "results/anomaly_scores.csv",
+    "results/anomaly_summary.json"
+  ],
+  "metrics": {
+    "raw": {
+      "n_scored": 1025,
+      "seed_stability_spearman": 0.992,
+      "spearman_vs_max_abs_z": 0.889
+    },
+    "relative": {
+      "n_scored": 1025,
+      "seed_stability_spearman": 0.992,
+      "spearman_vs_max_abs_z": 0.913
+    },
+    "fe_relative": {
+      "n_scored": 568,
+      "seed_stability_spearman": 0.991,
+      "spearman_vs_max_abs_z": 0.913
+    },
+    "flagged_composition": {
+      "raw": {
+        "n_flagged": 51,
+        "fully_evolved_flagged": 0.784,
+        "fully_evolved_all": 0.554,
+        "legendary_or_mythical_flagged": 0.353,
+        "legendary_or_mythical_all": 0.092
+      },
+      "relative": {
+        "n_flagged": 51,
+        "fully_evolved_flagged": 0.412,
+        "fully_evolved_all": 0.554,
+        "legendary_or_mythical_flagged": 0.078,
+        "legendary_or_mythical_all": 0.092
+      },
+      "fe_relative": {
+        "n_flagged": 28,
+        "fully_evolved_flagged": 1.0,
+        "fully_evolved_all": 1.0,
+        "legendary_or_mythical_flagged": 0.143,
+        "legendary_or_mythical_all": 0.157
+      }
+    },
+    "form_override_check": {
+      "raw": {
+        "top_overlap": 19,
+        "top_n": 20,
+        "rank_with_overrides": {
+          "Wishiwashi": 4,
+          "Terapagos": 376
+        },
+        "rank_default_forms": {
+          "Wishiwashi": 44,
+          "Terapagos": 882
+        }
+      },
+      "relative": {
+        "top_overlap": 19,
+        "top_n": 20,
+        "rank_with_overrides": {
+          "Wishiwashi": 63,
+          "Terapagos": 929
+        },
+        "rank_default_forms": {
+          "Wishiwashi": 144,
+          "Terapagos": 720
+        }
+      },
+      "fe_relative": {
+        "top_overlap": 20,
+        "top_n": 20,
+        "rank_with_overrides": {
+          "Wishiwashi": 33,
+          "Terapagos": 543
+        },
+        "rank_default_forms": {
+          "Wishiwashi": 59,
+          "Terapagos": 398
+        }
+      }
+    },
+    "top_10": {
+      "raw": [
+        "Shuckle",
+        "Blissey",
+        "Chansey",
+        "Wishiwashi",
+        "Deoxys",
+        "Pheromosa",
+        "Stakataka",
+        "Happiny",
+        "Kartana",
+        "Eternatus"
+      ],
+      "relative": [
+        "Shuckle",
+        "Happiny",
+        "Chansey",
+        "Blissey",
+        "Feebas",
+        "Abra",
+        "Magikarp",
+        "Cosmoem",
+        "Igglybuff",
+        "Jigglypuff"
+      ],
+      "fe_relative": [
+        "Shuckle",
+        "Blissey",
+        "Wobbuffet",
+        "Pyukumuku",
+        "Guzzlord",
+        "Stonjourner",
+        "Deoxys",
+        "Pheromosa",
+        "Bastiodon",
+        "Carbink"
+      ]
+    }
+  },
+  "interpretation": "Rankings are highly reproducible (seed Spearman 0.99+) and mostly match the single-stat baseline (Spearman 0.89-0.91): most anomalies have one extreme stat. Raw-view anomalies over-represent legendaries (35% vs 9%); relative-view anomalies over-represent unevolved Pok\u00e9mon. Form overrides change at most 1 of the top 20 in any view.",
+  "limitations": "Axis-aligned splits are weaker on diagonal (combination) oddities; an anomaly means rare in this dataset, not erroneous or strong."
+}

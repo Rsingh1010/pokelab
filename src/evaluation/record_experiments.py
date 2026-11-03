@@ -140,8 +140,41 @@ def build_records(sel, xtab, gmm):
     }
 
 
+def anomaly_record():
+    """Isolation Forest findings (Milestone 5). Not an EXP in the original spec, kept as ANOM-01."""
+    summ = json.loads((RESULTS_DIR / "anomaly_summary.json").read_text(encoding="utf-8"))
+    scores = pd.read_csv(RESULTS_DIR / "anomaly_scores.csv")
+    top = {v: scores.nsmallest(10, f"{v}_rank")["name"].tolist()
+           for v in ("raw", "relative", "fe_relative")}
+    comp, ovr = summ["flagged_composition"], summ["form_override_check"]
+    return {
+        "title": "Which Pokémon have unusual stat profiles?",
+        "status": "completed",
+        "methodology": "Isolation Forest (500 trees). Three views: raw stats (all), relative stats (all), "
+                       "relative stats (fully evolved only). No labels exist, so checked by seed stability "
+                       "(Spearman across 5 seeds), agreement with a single-stat baseline (max |z|), and a "
+                       "form-override robustness check. 'Flagged' = top 5%, a reporting cutoff only.",
+        "algorithm": "IsolationForest(n_estimators=500, random_state=42)",
+        "data_files": ["results/anomaly_scores.csv", "results/anomaly_summary.json"],
+        "metrics": {v: summ[v] for v in ("raw", "relative", "fe_relative")} | {
+            "flagged_composition": comp, "form_override_check": ovr, "top_10": top},
+        "interpretation": (
+            f"Rankings are highly reproducible (seed Spearman {min(summ[v]['seed_stability_spearman'] for v in top):.2f}+) "
+            f"and mostly match the single-stat baseline (Spearman {min(summ[v]['spearman_vs_max_abs_z'] for v in top):.2f}-"
+            f"{max(summ[v]['spearman_vs_max_abs_z'] for v in top):.2f}): most anomalies have one extreme stat. "
+            f"Raw-view anomalies over-represent legendaries ({comp['raw']['legendary_or_mythical_flagged']:.0%} vs "
+            f"{comp['raw']['legendary_or_mythical_all']:.0%}); relative-view anomalies over-represent unevolved Pokémon. "
+            f"Form overrides change at most {20 - min(ovr[v]['top_overlap'] for v in ovr)} of the top 20 in any view."),
+        "limitations": "Axis-aligned splits are weaker on diagonal (combination) oddities; an anomaly means rare "
+                       "in this dataset, not erroneous or strong.",
+    }
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
+    if (RESULTS_DIR / "anomaly_summary.json").exists():
+        (OUT / "ANOM-01.json").write_text(json.dumps({"id": "ANOM-01", **anomaly_record()}, indent=2), encoding="utf-8")
+        print("ANOM-01 - completed")
     for exp_id, record in build_records(*load()).items():
         (OUT / f"{exp_id}.json").write_text(json.dumps({"id": exp_id, **record}, indent=2), encoding="utf-8")
         print(exp_id, "-", record["status"])

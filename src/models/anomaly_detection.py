@@ -7,6 +7,8 @@ Two views:
             (Isolation Forest only compares values within one stat at a time, so
             standardizing would give the same result. We test that below.)
 - relative: stat / BST. Unusual = odd way of spending the stat budget, regardless of strength.
+- fe_relative: relative, fully evolved Pokémon only (same setup as the main clustering).
+            Unevolved Pokémon get no score in this view (blank, not zero).
 
 No ground truth exists, so there is no accuracy. We check instead:
 - seed stability: do different random forests rank Pokémon the same way?
@@ -54,19 +56,26 @@ def seed_stability(X, seeds=SEEDS) -> float:
     return float(np.mean([a.corr(b, method="spearman") for a, b in combinations(runs, 2)]))
 
 
-def score_view(df: pd.DataFrame, X: pd.DataFrame, view: str) -> pd.DataFrame:
-    scores = pd.Series(anomaly_scores(X), index=df.index)
+def score_view(X: pd.DataFrame, view: str) -> pd.DataFrame:
+    scores = pd.Series(anomaly_scores(X), index=X.index)
     return pd.DataFrame({
         f"{view}_score": scores,
         f"{view}_rank": scores.rank(ascending=False).astype(int),
-        f"{view}_flagged": scores.rank(ascending=False) <= round(TOP_SHARE * len(df)),
+        f"{view}_flagged": scores.rank(ascending=False) <= round(TOP_SHARE * len(X)),
         f"{view}_max_abs_z": max_abs_z(X),
         f"{view}_driver": most_extreme_stat(X),
     })
 
 
+VIEWS = ("raw", "relative", "fe_relative")
+
+
 def views(df: pd.DataFrame) -> dict:
-    return {"raw": df[STAT_COLS], "relative": relative_stats(df)}
+    return {
+        "raw": df[STAT_COLS],
+        "relative": relative_stats(df),
+        "fe_relative": relative_stats(df[df["is_fully_evolved"]]),
+    }
 
 
 def run(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
@@ -74,9 +83,10 @@ def run(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             "is_fully_evolved", "is_legendary", "is_mythical"]
     parts, summary = [df[info]], {}
     for view, X in views(df).items():
-        table = score_view(df, X, view)
+        table = score_view(X, view)
         parts.append(table)
         summary[view] = {
+            "n_scored": len(X),
             "seed_stability_spearman": round(seed_stability(X), 3),
             "spearman_vs_max_abs_z": round(table[f"{view}_score"].corr(table[f"{view}_max_abs_z"], method="spearman"), 3),
         }
@@ -88,7 +98,7 @@ def form_override_check(with_overrides: pd.DataFrame, top_n: int = 20) -> dict:
     from src.data.build_dataset import build
     without = build(use_overrides=False)
     out = {}
-    for view in ("raw", "relative"):
+    for view in VIEWS:
         a = with_overrides.set_index("name")[f"{view}_rank"]
         b = run(without)[0].set_index("name")[f"{view}_rank"]
         out[view] = {
@@ -96,6 +106,23 @@ def form_override_check(with_overrides: pd.DataFrame, top_n: int = 20) -> dict:
             "top_n": top_n,
             "rank_with_overrides": {n: int(a[n]) for n in ("Wishiwashi", "Terapagos")},
             "rank_default_forms": {n: int(b[n]) for n in ("Wishiwashi", "Terapagos")},
+        }
+    return out
+
+
+def flagged_composition(table: pd.DataFrame) -> dict:
+    """Are flagged Pokémon different from the Pokémon scored in that view?"""
+    out = {}
+    for view in VIEWS:
+        scored = table[table[f"{view}_score"].notna()]
+        flagged = scored[scored[f"{view}_flagged"].eq(True)]
+        legend = lambda d: float((d["is_legendary"] | d["is_mythical"]).mean())
+        out[view] = {
+            "n_flagged": len(flagged),
+            "fully_evolved_flagged": round(float(flagged["is_fully_evolved"].mean()), 3),
+            "fully_evolved_all": round(float(scored["is_fully_evolved"].mean()), 3),
+            "legendary_or_mythical_flagged": round(legend(flagged), 3),
+            "legendary_or_mythical_all": round(legend(scored), 3),
         }
     return out
 
@@ -108,19 +135,15 @@ if __name__ == "__main__":
     table.to_csv(RESULTS_DIR / "anomaly_scores.csv", index=False)
     print("Checks:", json.dumps(summary, indent=2))
 
-    for view in ("raw", "relative"):
+    for view in VIEWS:
         top = table.nsmallest(15, f"{view}_rank")
         print(f"\nTop 15 [{view}]")
         print(top[["name", "bst", f"{view}_score", f"{view}_max_abs_z", f"{view}_driver",
                    "is_fully_evolved", "is_legendary"]].round(3).to_string(index=False))
 
-    print("\nFlagged (top 5%) vs everyone: share fully evolved / legendary or mythical")
-    for view in ("raw", "relative"):
-        f = table[table[f"{view}_flagged"]]
-        print(f"  {view:8s}: fully evolved {f['is_fully_evolved'].mean():.0%} (all: {df['is_fully_evolved'].mean():.0%}), "
-              f"legendary/mythical {(f['is_legendary'] | f['is_mythical']).mean():.0%} "
-              f"(all: {(df['is_legendary'] | df['is_mythical']).mean():.0%})")
-
-    print("\nForm override check:", json.dumps(form_override_check(table), indent=2))
+    summary["flagged_composition"] = flagged_composition(table)
+    print("\nFlagged vs all scored:", json.dumps(summary["flagged_composition"], indent=2))
+    summary["form_override_check"] = form_override_check(table)
+    print("\nForm override check:", json.dumps(summary["form_override_check"], indent=2))
     with open(RESULTS_DIR / "anomaly_summary.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
