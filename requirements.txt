@@ -8,3 +8,6 @@ matplotlib>=3.9
 seaborn>=0.13
 # Milestone 3: modeling
 scikit-learn>=1.5
+# Milestone 6: integer programming. Pinned below 3: PuLP 2.x bundles the free CBC solver
+# and uses the classic LpVariable API. PuLP 4.x rewrote the API and no longer bundles CBC.
+pulp>=2.8,<3
