@@ -1,0 +1,10 @@
+{
+  "raw": {
+    "seed_stability_spearman": 0.992,
+    "spearman_vs_max_abs_z": 0.889
+  },
+  "relative": {
+    "seed_stability_spearman": 0.992,
+    "spearman_vs_max_abs_z": 0.913
+  }
+}
