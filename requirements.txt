@@ -6,3 +6,5 @@ pytest>=8.0
 ipykernel>=6.29
 matplotlib>=3.9
 seaborn>=0.13
+# Milestone 3: modeling
+scikit-learn>=1.5
