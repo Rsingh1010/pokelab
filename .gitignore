@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Raw API cache: large, regenerable with the fetch script
+data/raw/
+
+# Notebooks / editors
+.ipynb_checkpoints/
+.vscode/
+.DS_Store

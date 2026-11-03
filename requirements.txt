@@ -1,0 +1,4 @@
+# Milestone 1 only. We add packages as each milestone needs them.
+requests>=2.31
+pandas>=2.1
+pytest>=8.0
