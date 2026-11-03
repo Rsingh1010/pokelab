@@ -136,7 +136,43 @@ def build_records(sel, xtab, gmm):
                               f"(ARI {fe_rel.loc[2, 'stability_ari']:.2f}).",
             "limitations": "Seed-only stability was not used: with n_init=10 it is near-perfect and uninformative.",
         },
-        "EXP-06": {"title": "Are archetypes associated with competitive usage?", "status": "pending"},
+        "EXP-06": usage_record(),
+    }
+
+
+def usage_record():
+    path, pred_path = RESULTS_DIR / "competitive_summary.json", RESULTS_DIR / "competitive_prediction.json"
+    if not (path.exists() and pred_path.exists()):
+        return {"title": "Are archetypes associated with competitive usage?", "status": "pending"}
+    a = json.loads(path.read_text(encoding="utf-8"))
+    p = json.loads(pred_path.read_text(encoding="utf-8"))["models"]
+    sp = a["spearman_vs_usage"]
+    best = max((m for m in p if m != "bst_ridge"), key=lambda m: p[m]["mean_heldout_spearman"])
+    return {
+        "title": "Are archetypes associated with competitive usage?",
+        "status": "completed",
+        "question": "Do stat strength, stat shape (role axes, descriptive clusters) or anomalies relate to "
+                    "Gen 9 National Dex usage, and does anything beyond BST help predict it?",
+        "methodology": "Smogon chaos stats, gen9nationaldex-1630, mean of 2026-07..09. Fully evolved Pokémon legal "
+                       "in the format (banned tiers removed using Showdown formats-data; tiers never used as inputs). "
+                       "Exact-form matching. Spearman with 1,000-sample bootstrap 95% intervals; Kruskal-Wallis across "
+                       "descriptive clusters; 5-fold x10 repeated CV comparing BST-only vs stats+shares+types models.",
+        "data_files": ["data/processed/usage_gen9natdex.csv", "results/competitive_summary.json",
+                       "results/competitive_prediction.json", "results/competitive_pairs.csv"],
+        "metrics": {"association": a, "prediction": p},
+        "interpretation": (
+            f"BST has a clear moderate link to usage (rho {sp['bst']['rho']}, 95% CI {sp['bst']['ci95']}). Stat shape "
+            f"does not: role axes rho {sp['speed_axis (fast+ / bulky-)']['rho']} and "
+            f"{sp['physical_axis (physical+ / special-)']['rho']}, descriptive clusters p = "
+            f"{a['kruskal_usage_by_cluster_p']:.2f}. Held-out prediction: BST-only Spearman "
+            f"{p['bst_ridge']['mean_heldout_spearman']}; best richer model ({best}) "
+            f"{p[best]['mean_heldout_spearman']} (gain {p[best]['mean_gain_over_bst']:+.3f}, beats BST in "
+            f"{p[best]['share_of_folds_beating_bst']:.0%} of folds). Near-identical stat profiles can differ "
+            "~25x in usage (Great Tusk vs Buzzwole), so abilities, moves and typing drive much of usage."),
+        "limitations": "Usage is popularity, not win rate. 27% of usage is in forms outside the dataset (Megas, "
+                       "alternate and regional forms); Eviolite users (Chansey, Porygon2) are excluded as not fully "
+                       "evolved. Showdown tier file taken from the live repo, frozen by local cache. Only 29 Pokémon "
+                       "pass the 4.52% high-usage cutoff, so group comparisons are hints. Tests are exploratory.",
     }
 
 

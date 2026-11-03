@@ -1,0 +1,23 @@
+{
+  "population": 523,
+  "cv": "5-fold x 10 repeats",
+  "target": "log10(usage + 0.0001)",
+  "models": {
+    "bst_ridge": {
+      "mean_heldout_spearman": 0.51,
+      "std": 0.076
+    },
+    "full_ridge": {
+      "mean_heldout_spearman": 0.549,
+      "std": 0.075,
+      "mean_gain_over_bst": 0.039,
+      "share_of_folds_beating_bst": 0.64
+    },
+    "full_forest": {
+      "mean_heldout_spearman": 0.484,
+      "std": 0.071,
+      "mean_gain_over_bst": -0.026,
+      "share_of_folds_beating_bst": 0.32
+    }
+  }
+}

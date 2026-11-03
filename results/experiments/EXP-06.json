@@ -1,5 +1,128 @@
 {
   "id": "EXP-06",
   "title": "Are archetypes associated with competitive usage?",
-  "status": "pending"
+  "status": "completed",
+  "question": "Do stat strength, stat shape (role axes, descriptive clusters) or anomalies relate to Gen 9 National Dex usage, and does anything beyond BST help predict it?",
+  "methodology": "Smogon chaos stats, gen9nationaldex-1630, mean of 2026-07..09. Fully evolved Pok\u00e9mon legal in the format (banned tiers removed using Showdown formats-data; tiers never used as inputs). Exact-form matching. Spearman with 1,000-sample bootstrap 95% intervals; Kruskal-Wallis across descriptive clusters; 5-fold x10 repeated CV comparing BST-only vs stats+shares+types models.",
+  "data_files": [
+    "data/processed/usage_gen9natdex.csv",
+    "results/competitive_summary.json",
+    "results/competitive_prediction.json",
+    "results/competitive_pairs.csv"
+  ],
+  "metrics": {
+    "association": {
+      "population": 523,
+      "with_any_usage": 413,
+      "high_usage_cutoff": 0.0452,
+      "n_high_usage": 29,
+      "spearman_vs_usage": {
+        "bst": {
+          "rho": 0.512,
+          "ci95": [
+            0.443,
+            0.579
+          ],
+          "clear_link": true
+        },
+        "speed_axis (fast+ / bulky-)": {
+          "rho": -0.006,
+          "ci95": [
+            -0.082,
+            0.084
+          ],
+          "clear_link": false
+        },
+        "physical_axis (physical+ / special-)": {
+          "rho": -0.024,
+          "ci95": [
+            -0.101,
+            0.062
+          ],
+          "clear_link": false
+        },
+        "anomaly_score (fe_relative)": {
+          "rho": 0.043,
+          "ci95": [
+            -0.036,
+            0.131
+          ],
+          "clear_link": false
+        },
+        "hp (raw)": {
+          "rho": 0.187,
+          "ci95": [
+            0.102,
+            0.273
+          ],
+          "clear_link": true
+        },
+        "attack (raw)": {
+          "rho": 0.127,
+          "ci95": [
+            0.037,
+            0.217
+          ],
+          "clear_link": true
+        },
+        "defense (raw)": {
+          "rho": 0.243,
+          "ci95": [
+            0.162,
+            0.321
+          ],
+          "clear_link": true
+        },
+        "sp_attack (raw)": {
+          "rho": 0.163,
+          "ci95": [
+            0.075,
+            0.247
+          ],
+          "clear_link": true
+        },
+        "sp_defense (raw)": {
+          "rho": 0.14,
+          "ci95": [
+            0.059,
+            0.223
+          ],
+          "clear_link": true
+        },
+        "speed (raw)": {
+          "rho": 0.141,
+          "ci95": [
+            0.058,
+            0.228
+          ],
+          "clear_link": true
+        }
+      },
+      "kruskal_usage_by_cluster_p": 0.8040757936221742,
+      "usage_by_legendary": {
+        "regular": 0.0003,
+        "legendary/mythical": 0.0017
+      }
+    },
+    "prediction": {
+      "bst_ridge": {
+        "mean_heldout_spearman": 0.51,
+        "std": 0.076
+      },
+      "full_ridge": {
+        "mean_heldout_spearman": 0.549,
+        "std": 0.075,
+        "mean_gain_over_bst": 0.039,
+        "share_of_folds_beating_bst": 0.64
+      },
+      "full_forest": {
+        "mean_heldout_spearman": 0.484,
+        "std": 0.071,
+        "mean_gain_over_bst": -0.026,
+        "share_of_folds_beating_bst": 0.32
+      }
+    }
+  },
+  "interpretation": "BST has a clear moderate link to usage (rho 0.512, 95% CI [0.443, 0.579]). Stat shape does not: role axes rho -0.006 and -0.024, descriptive clusters p = 0.80. Held-out prediction: BST-only Spearman 0.51; best richer model (full_ridge) 0.549 (gain +0.039, beats BST in 64% of folds). Near-identical stat profiles can differ ~25x in usage (Great Tusk vs Buzzwole), so abilities, moves and typing drive much of usage.",
+  "limitations": "Usage is popularity, not win rate. 27% of usage is in forms outside the dataset (Megas, alternate and regional forms); Eviolite users (Chansey, Porygon2) are excluded as not fully evolved. Showdown tier file taken from the live repo, frozen by local cache. Only 29 Pok\u00e9mon pass the 4.52% high-usage cutoff, so group comparisons are hints. Tests are exploratory."
 }
