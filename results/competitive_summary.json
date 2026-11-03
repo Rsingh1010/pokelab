@@ -1,0 +1,93 @@
+{
+  "population": 523,
+  "with_any_usage": 413,
+  "high_usage_cutoff": 0.0452,
+  "n_high_usage": 29,
+  "spearman_vs_usage": {
+    "bst": {
+      "rho": 0.512,
+      "ci95": [
+        0.443,
+        0.579
+      ],
+      "clear_link": true
+    },
+    "speed_axis (fast+ / bulky-)": {
+      "rho": -0.006,
+      "ci95": [
+        -0.082,
+        0.084
+      ],
+      "clear_link": false
+    },
+    "physical_axis (physical+ / special-)": {
+      "rho": -0.024,
+      "ci95": [
+        -0.101,
+        0.062
+      ],
+      "clear_link": false
+    },
+    "anomaly_score (fe_relative)": {
+      "rho": 0.043,
+      "ci95": [
+        -0.036,
+        0.131
+      ],
+      "clear_link": false
+    },
+    "hp (raw)": {
+      "rho": 0.187,
+      "ci95": [
+        0.102,
+        0.273
+      ],
+      "clear_link": true
+    },
+    "attack (raw)": {
+      "rho": 0.127,
+      "ci95": [
+        0.037,
+        0.217
+      ],
+      "clear_link": true
+    },
+    "defense (raw)": {
+      "rho": 0.243,
+      "ci95": [
+        0.162,
+        0.321
+      ],
+      "clear_link": true
+    },
+    "sp_attack (raw)": {
+      "rho": 0.163,
+      "ci95": [
+        0.075,
+        0.247
+      ],
+      "clear_link": true
+    },
+    "sp_defense (raw)": {
+      "rho": 0.14,
+      "ci95": [
+        0.059,
+        0.223
+      ],
+      "clear_link": true
+    },
+    "speed (raw)": {
+      "rho": 0.141,
+      "ci95": [
+        0.058,
+        0.228
+      ],
+      "clear_link": true
+    }
+  },
+  "kruskal_usage_by_cluster_p": 0.8040757936221742,
+  "usage_by_legendary": {
+    "regular": 0.0003,
+    "legendary/mythical": 0.0017
+  }
+}
