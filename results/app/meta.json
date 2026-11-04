@@ -1,4 +1,42 @@
 {
+  "axis_meaning": {
+    "role": {
+      "speed_axis": {
+        "hp": -0.13,
+        "attack": -0.2,
+        "defense": -0.84,
+        "sp_attack": 0.51,
+        "sp_defense": -0.29,
+        "speed": 0.83
+      },
+      "physical_axis": {
+        "hp": 0.18,
+        "attack": 0.85,
+        "defense": -0.06,
+        "sp_attack": -0.58,
+        "sp_defense": -0.72,
+        "speed": 0.25
+      }
+    },
+    "strength": {
+      "strength_pc1": {
+        "hp": 0.69,
+        "attack": 0.71,
+        "defense": 0.64,
+        "sp_attack": 0.7,
+        "sp_defense": 0.72,
+        "speed": 0.5
+      },
+      "strength_pc2": {
+        "hp": -0.09,
+        "attack": -0.07,
+        "defense": -0.61,
+        "sp_attack": 0.38,
+        "sp_defense": -0.17,
+        "speed": 0.74
+      }
+    }
+  },
   "role_map_explained_variance": [
     0.338,
     0.263

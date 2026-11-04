@@ -17,6 +17,8 @@ def stat_map(df, view="role", color_by="BST", highlight=None, explained=None, he
     x, y, xt, yt = AXES[view]
     d = df[df[x].notna()].copy()
     col = COLOR_OPTIONS[color_by]
+    if view == "strength" and col == "fe_relative_score":
+        col = "raw_score"   # unevolved Pokémon have no shape score; use the raw-stat anomaly view here
     fig = go.Figure()
     hover = "<b>%{customdata[0]}</b><br>BST %{customdata[1]}<extra></extra>"
     custom = np.stack([d["name"], d["bst"]], axis=1)
@@ -29,7 +31,11 @@ def stat_map(df, view="role", color_by="BST", highlight=None, explained=None, he
                             marker=dict(size=6, color=color, opacity=.75),
                             customdata=np.stack([part["name"], part["bst"]], axis=1), hovertemplate=hover)
     else:
-        values = d[col].fillna(0)
+        values = d[col]
+        if col == "usage_mean":
+            d = d[values.notna()]           # unevolved Pokémon have no usage: leave them off, don't paint them 0
+            values = d[col]
+            custom = np.stack([d["name"], d["bst"]], axis=1)
         if col == "usage_mean":
             values = np.log10(values + 1e-4)
         fig.add_scatter(x=d[x], y=d[y], mode="markers", name="",

@@ -70,7 +70,15 @@ def build() -> tuple[pd.DataFrame, dict]:
         usage = pd.read_csv(usage_path)[["dex_id", "natdex_tier", "legal", "usage_mean"]]
         out = out.merge(usage, on="dex_id", how="left")
 
+    # What each map axis means: correlation of each stat with the axis (sign already oriented)
+    shares = out[STAT_COLS].div(out[STAT_COLS].sum(axis=1), axis=0)
+    axis_meaning = {
+        "role": {ax: shares.corrwith(out[ax]).round(2).to_dict() for ax in ("speed_axis", "physical_axis")},
+        "strength": {ax: out[STAT_COLS].corrwith(out[ax]).round(2).to_dict() for ax in ("strength_pc1", "strength_pc2")},
+    }
+
     meta = {
+        "axis_meaning": axis_meaning,
         "role_map_explained_variance": [round(float(v), 3) for v in role_pca.explained_variance_ratio_[:2]],
         "strength_map_explained_variance": [round(float(v), 3) for v in strength_pca.explained_variance_ratio_],
         "cluster_labels": {int(k): v for k, v in names.items()},
