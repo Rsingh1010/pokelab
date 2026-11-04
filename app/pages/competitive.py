@@ -120,7 +120,9 @@ with t_groups:
 
 with t_twins:
     st.markdown("Pairs among the closest 25% of nearest neighbours on standardized stats, with the largest usage gaps. "
-                "Similar numbers, very different popularity.")
+                "Similar numbers, very different popularity. Only pairs where both are on at least 0.5% of teams: "
+                "ratios of near-zero usage are noise.")
+    pairs = pairs[pairs[["usage_a", "usage_b"]].min(axis=1) >= 0.005]
     info = df.set_index("name")
     for _, p in pairs.head(5).iterrows():
         cols = st.columns([1, 4, 1, 4, 2])

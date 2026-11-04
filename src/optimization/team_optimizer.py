@@ -197,8 +197,8 @@ def solve(M: Matrices, weights=DEFAULT_WEIGHTS, max_weak=DEFAULT_MAX_WEAK,
     prob.solve(pulp.PULP_CBC_CMD(msg=False))
     if pulp.LpStatus[prob.status] != "Optimal":
         raise InfeasibleTeamError(
-            f"No valid team ({pulp.LpStatus[prob.status]}). Try lowering min BST, "
-            "raising max shared weaknesses, or unlocking a Pokémon.")
+            f"No valid team ({pulp.LpStatus[prob.status]}). Try lowering min BST, raising the "
+            "weakness-load or shared-type limits, allowing legendaries, or unlocking a Pokémon.")
     return [i for i in range(n) if x[i].value() > 0.5]
 
 

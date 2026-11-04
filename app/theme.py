@@ -48,8 +48,9 @@ section[data-testid="stSidebar"] {{ background: {COLORS['bg2']}; border-right: 1
     background: {COLORS['red']} !important; border-radius: 10px; }}
 [data-testid="stSidebarNav"] a[aria-current="page"] span,
 [data-testid="stSidebarNavLink"][aria-current="page"] span {{ color: #fff !important; font-weight: 600; }}
-.pl-team img {{ width: 48px; height: 48px; background: {COLORS['bg']}; border: 1px solid {COLORS['border']};
-              border-radius: 10px; margin: 0 6px 6px 0; image-rendering: pixelated; }}
+.pl-team {{ display: flex; flex-wrap: nowrap; }}
+.pl-team img {{ width: 40px; height: 40px; flex: 0 0 auto; background: {COLORS['bg']}; border: 1px solid {COLORS['border']};
+              border-radius: 8px; margin: 0 4px 6px 0; image-rendering: pixelated; }}
 .pl-check {{ color: {COLORS['green']}; margin-right: .35rem; }}
 .pl-row {{ display: flex; justify-content: space-between; align-items: center; padding: .55rem 0;
           border-bottom: 1px solid {COLORS['border']}; }}

@@ -143,7 +143,14 @@ if __name__ == "__main__":
 
     summary["flagged_composition"] = flagged_composition(table)
     print("\nFlagged vs all scored:", json.dumps(summary["flagged_composition"], indent=2))
-    summary["form_override_check"] = form_override_check(table)
-    print("\nForm override check:", json.dumps(summary["form_override_check"], indent=2))
+    try:
+        summary["form_override_check"] = form_override_check(table)
+        print("\nForm override check:", json.dumps(summary["form_override_check"], indent=2))
+    except FileNotFoundError:
+        # needs the raw PokéAPI cache (not committed); keep the previous result if there is one
+        old = RESULTS_DIR / "anomaly_summary.json"
+        prev = json.loads(old.read_text(encoding="utf-8")).get("form_override_check") if old.exists() else None
+        summary["form_override_check"] = prev
+        print("\nForm override check skipped (raw cache missing); kept previous result.")
     with open(RESULTS_DIR / "anomaly_summary.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)

@@ -123,6 +123,6 @@
       }
     }
   },
-  "interpretation": "BST has a clear moderate link to usage (rho 0.512, 95% CI [0.443, 0.579]). Stat shape does not: role axes rho -0.006 and -0.024, descriptive clusters p = 0.80. Held-out prediction: BST-only Spearman 0.51; best richer model (full_ridge) 0.549 (gain +0.039, beats BST in 64% of folds). Near-identical stat profiles can differ ~25x in usage (Great Tusk vs Buzzwole), so abilities, moves and typing drive much of usage.",
+  "interpretation": "BST has a clear moderate link to usage (rho 0.512, 95% CI [0.443, 0.579]). Stat shape does not: role axes rho -0.006 and -0.024, descriptive clusters p = 0.80. Held-out prediction: BST-only Spearman 0.51; best richer model (full_ridge) 0.549 (gain +0.039, beats BST in 64% of folds). Near-identical stat profiles can differ 28x in usage (Buzzwole vs Great Tusk), so abilities, moves and typing drive much of usage.",
   "limitations": "Usage is popularity, not win rate. 27% of usage is in forms outside the dataset (Megas, alternate and regional forms); Eviolite users (Chansey, Porygon2) are excluded as not fully evolved. Showdown tier file taken from the live repo, frozen by local cache. Only 29 Pok\u00e9mon pass the 4.52% high-usage cutoff, so group comparisons are hints. Tests are exploratory."
 }

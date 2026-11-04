@@ -148,6 +148,11 @@ def usage_record():
     p = json.loads(pred_path.read_text(encoding="utf-8"))["models"]
     sp = a["spearman_vs_usage"]
     best = max((m for m in p if m != "bst_ridge"), key=lambda m: p[m]["mean_heldout_spearman"])
+    pairs = pd.read_csv(RESULTS_DIR / "competitive_pairs.csv", index_col=0)
+    # ratios of tiny usages are noise (0.01% vs 4% = 400x): require both >= 0.5% of teams
+    pairs = pairs[pairs[["usage_a", "usage_b"]].min(axis=1) >= 0.005]
+    top = pairs.assign(ratio=pairs[["usage_a", "usage_b"]].max(axis=1) / pairs[["usage_a", "usage_b"]].min(axis=1))
+    top = top.loc[top["ratio"].idxmax()]   # most extreme stat-twin contrast
     return {
         "title": "Are archetypes associated with competitive usage?",
         "status": "completed",
@@ -168,7 +173,7 @@ def usage_record():
             f"{p['bst_ridge']['mean_heldout_spearman']}; best richer model ({best}) "
             f"{p[best]['mean_heldout_spearman']} (gain {p[best]['mean_gain_over_bst']:+.3f}, beats BST in "
             f"{p[best]['share_of_folds_beating_bst']:.0%} of folds). Near-identical stat profiles can differ "
-            "~25x in usage (Great Tusk vs Buzzwole), so abilities, moves and typing drive much of usage."),
+            f"{top['ratio']:.0f}x in usage ({top['a']} vs {top['b']}), so abilities, moves and typing drive much of usage."),
         "limitations": "Usage is popularity, not win rate. 27% of usage is in forms outside the dataset (Megas, "
                        "alternate and regional forms); Eviolite users (Chansey, Porygon2) are excluded as not fully "
                        "evolved. Showdown tier file taken from the live repo, frozen by local cache. Only 29 Pokémon "
@@ -200,7 +205,8 @@ def anomaly_record():
             f"{max(summ[v]['spearman_vs_max_abs_z'] for v in top):.2f}): most anomalies have one extreme stat. "
             f"Raw-view anomalies over-represent legendaries ({comp['raw']['legendary_or_mythical_flagged']:.0%} vs "
             f"{comp['raw']['legendary_or_mythical_all']:.0%}); relative-view anomalies over-represent unevolved Pokémon. "
-            f"Form overrides change at most {20 - min(ovr[v]['top_overlap'] for v in ovr)} of the top 20 in any view."),
+            + (f"Form overrides change at most {20 - min(ovr[v]['top_overlap'] for v in ovr)} of the top 20 in any view."
+               if ovr else "Form-override check not run (needs the raw cache).")),
         "limitations": "Axis-aligned splits are weaker on diagonal (combination) oddities; an anomaly means rare "
                        "in this dataset, not erroneous or strong.",
     }
