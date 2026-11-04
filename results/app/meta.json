@@ -1,0 +1,26 @@
+{
+  "role_map_explained_variance": [
+    0.338,
+    0.263
+  ],
+  "strength_map_explained_variance": [
+    0.44,
+    0.184
+  ],
+  "cluster_labels": {
+    "0": "defense+ / speed-",
+    "1": "speed+ / defense-",
+    "2": "hp+ / speed-",
+    "3": "sp_attack+ / attack-",
+    "4": "attack+ / sp_attack-"
+  },
+  "n_similar": 5,
+  "stat_cols": [
+    "hp",
+    "attack",
+    "defense",
+    "sp_attack",
+    "sp_defense",
+    "speed"
+  ]
+}

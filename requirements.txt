@@ -11,3 +11,6 @@ scikit-learn>=1.5
 # Milestone 6: integer programming. Pinned below 3: PuLP 2.x bundles the free CBC solver
 # and uses the classic LpVariable API. PuLP 4.x rewrote the API and no longer bundles CBC.
 pulp>=2.8,<3
+# Milestone 9: app. Upper bounds on purpose (lesson from PuLP 4.x).
+streamlit>=1.40,<2
+plotly>=5.24,<7
