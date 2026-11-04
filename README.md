@@ -1,4 +1,4 @@
-# PokéLab
+# PokéLab | pokelab-rsingh.streamlit.app
 
 **Machine learning, archetype discovery & team optimization on 1,025 Pokémon.**
 
