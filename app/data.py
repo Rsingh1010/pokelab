@@ -82,3 +82,35 @@ def evaluation_numbers() -> dict:
         "explained_2d": float(sum(meta()["role_map_explained_variance"])),
         "eligible_k": sel.loc[sel["eligible"], "k"].tolist(),
     }
+
+
+@st.cache_data(show_spinner="Solving the integer program...")
+def solve_team(weights: tuple, min_bst: int, allow_legendary: bool, max_weak: int,
+               max_per_type: int, locked: tuple) -> dict:
+    """Run the optimizer with the user's settings. Cached per settings, so repeat clicks are instant."""
+    from src.features.preprocessing import load_pokemon
+    from src.optimization.explain import explain_members, explain_team
+    from src.optimization.team_optimizer import TERMS, optimize
+    from src.optimization.type_chart import load_type_chart
+
+    w = dict(zip(TERMS, weights))
+    team, scores, pool, M = optimize(load_pokemon(), load_type_chart(), weights=w, min_bst=min_bst,
+                                     allow_legendary=allow_legendary, max_weak=max_weak,
+                                     max_per_type=max_per_type, locked=list(locked))
+    idx = [M.names.index(n) for n in team["name"]]
+    return {"names": team["name"].tolist(), "scores": scores, "members": explain_members(M, idx, w),
+            "summary": explain_team(M, idx, w), "M": M, "idx": idx, "weights": w, "pool_size": len(pool)}
+
+
+@st.cache_data(show_spinner="Scoring baseline teams...")
+def live_benchmark(_M, key: tuple, weights: tuple, max_weak: int, max_per_type: int, n_random: int = 3000) -> dict:
+    """Random / top-BST / greedy teams for the CURRENT settings. `key` identifies _M for caching."""
+    from src.optimization.benchmark import evaluate, greedy_team, random_teams, top_bst_team
+    from src.optimization.team_optimizer import TERMS
+
+    w = dict(zip(TERMS, weights))
+    rand = pd.DataFrame([evaluate(_M, t, w, max_weak, max_per_type) for t in random_teams(_M, n_random)])
+    g = greedy_team(_M, w, max_weak, max_per_type)
+    return {"random": rand,
+            "top_bst": evaluate(_M, top_bst_team(_M), w, max_weak, max_per_type),
+            "greedy": None if g is None else evaluate(_M, g, w, max_weak, max_per_type)}
